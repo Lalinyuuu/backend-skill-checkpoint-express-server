@@ -1,10 +1,21 @@
-// Create PostgreSQL Connection Pool here !
-import * as pg from "pg";
-const { Pool } = pg.default;
+import pg from "pg";
+const { Pool } = pg;
 
-const connectionPool = new Pool({
+
+const pool = new Pool({
   connectionString:
-    "postgresql://your-db-username:your-db-password@localhost:5432/your-db-name",
+    process.env.DATABASE_URL ||
+    "postgres://localhost:5432/quora_db",
 });
 
-export default connectionPool;
+export async function query(text, params) {
+  const client = await pool.connect();
+  try {
+    const result = await client.query(text, params);
+    return result;
+  } finally {
+    client.release();
+  }
+}
+
+export default pool;
